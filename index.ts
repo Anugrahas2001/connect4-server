@@ -12,7 +12,7 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173","https://connect4-client-anugraha-ss-projects.vercel.app/"],
     methods: ["GET", "POST"],
   },
 });
