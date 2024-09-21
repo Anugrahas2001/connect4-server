@@ -5,14 +5,16 @@ import http from "http";
 
 const app = express();
 const port = 3000;
-console.log(port, "3000");
 
 app.use(cors());
 
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173","https://connect4-client-anugraha-ss-projects.vercel.app/"],
+    origin: [
+      "http://localhost:5173",
+      "https://connect4-client-anugraha-ss-projects.vercel.app/",
+    ],
     methods: ["GET", "POST"],
   },
 });
@@ -30,33 +32,26 @@ let game: Game = {
   players: {},
   currentPlayer: "red",
 };
-console.log(game.board, "board");
 
 io.on("connection", (socket: Socket) => {
   console.log(`Player is connected with id ${socket.id}`);
 
   socket.on("joinGame", () => {
     let playersCount = Object.keys(game.players).length;
-    console.log(playersCount, "count");
     if (playersCount < 2) {
-      console.log("started");
       const color = playersCount === 0 ? "red" : "yellow";
-      console.log(color, "checking");
       game.players[socket.id] = color;
       console.log(`player ${socket.id} joined as color ${color}`);
 
       socket.emit("playerColor", { color });
 
       if (Object.keys(game.players).length === 2) {
-        console.log("Two players joined");
         io.emit("opponentJoined");
       }
     }
   });
 
-  socket.on("makeMove", ({column}) => {
-    console.log(column, "column");
-
+  socket.on("makeMove", ({ column }) => {
     let gameBoard = game.board;
     let currentPlayer = game.players[socket.id];
     let row = -1;
@@ -70,7 +65,6 @@ io.on("connection", (socket: Socket) => {
 
     if (row != -1) {
       gameBoard[row][column] = currentPlayer;
-      console.log("updated gameBoard", gameBoard);
       io.emit("updatedBoard", {
         board: gameBoard,
         currentPlayer: currentPlayer === "red" ? "yellow" : "red",
@@ -88,18 +82,6 @@ io.on("connection", (socket: Socket) => {
   socket.on("disconnect", () => {
     console.log(`player with id ${socket.id} disconnected`);
     delete game.players[socket.id];
-  });
-
-  socket.on("newGame", () => {
-    (game.board = Array(6)
-      .fill(null)
-      .map(() => Array(7).fill(null))),
-      (game.currentPlayer = "red");
-
-    io.emit("updatedBoard", {
-      board: game.board,
-      currentPlayer: game.currentPlayer,
-    });
   });
 });
 
